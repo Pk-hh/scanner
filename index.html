@@ -11,8 +11,59 @@
   <link rel="icon" href="icon.png" />
 
   <!-- QR Scanner Library -->
-  <script src="https://unpkg.com/qr-scanner/qr-scanner.min.js"></script>
-  <script defer src="app.js"></script>
+  <script type="module">
+    import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
+
+    const video = document.getElementById("preview");
+    const result = document.getElementById("result");
+    const flashBtn = document.getElementById("flash-btn");
+
+    let scanner;
+
+    QrScanner.hasCamera().then(async (hasCamera) => {
+      if (!hasCamera) {
+        result.textContent = "❌ No camera found.";
+        return;
+      }
+
+      scanner = new QrScanner(video, async (content) => {
+        result.textContent = "✅ " + content;
+        if (navigator.vibrate) navigator.vibrate(200);
+
+        // Send to Google Sheets
+        await fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ qrData: content })
+        });
+
+        scanner.stop(); // Stop after scan
+        setTimeout(() => {
+          result.textContent = "Scan another code";
+          scanner.start();
+        }, 3000);
+      });
+
+      await scanner.start();
+    });
+
+    flashBtn.addEventListener("click", async () => {
+      if (scanner && scanner._active && scanner.hasFlash()) {
+        try {
+          await scanner.toggleFlash();
+          flashBtn.textContent = scanner.isFlashOn() ? "💡 Flash Off" : "🔦 Flash On";
+        } catch {
+          alert("Flash control not supported.");
+        }
+      } else {
+        alert("Flash not available.");
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 
   <style>
     html, body {
@@ -20,13 +71,13 @@
       padding: 0;
       height: 100%;
       font-family: system-ui, sans-serif;
-      background-color: #000;
+      background: #000;
       color: #fff;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     video {
@@ -35,88 +86,35 @@
       object-fit: cover;
     }
 
-    #controls {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 10;
-    }
-
-    #flash-btn {
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      border: 1px solid #fff;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
     #result {
       position: absolute;
       bottom: 20px;
-      background-color: rgba(0, 0, 0, 0.8);
+      background: rgba(0,0,0,0.8);
       padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      color: #0f0;
+      border-radius: 10px;
+      font-size: 1rem;
       text-align: center;
-      width: calc(100% - 40px);
       max-width: 90%;
+      color: #0f0;
+    }
+
+    #flash-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 1rem;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <div id="controls">
-    <button id="flash-btn">🔦 Flash</button>
-  </div>
-  <video id="preview" playsinline autoplay></video>
+  <button id="flash-btn">🔦 Flash</button>
+  <video id="preview" autoplay muted playsinline></video>
   <div id="result">Scan a QR Code</div>
-
-  <script>
-    const video = document.getElementById("preview");
-    const result = document.getElementById("result");
-    const flashBtn = document.getElementById("flash-btn");
-
-    let scanner;
-
-    async function startScanner() {
-      scanner = new QrScanner(video, async (content) => {
-        result.textContent = "✅ " + content;
-        if (navigator.vibrate) navigator.vibrate(150);
-
-        // Send to Google Sheet
-        await fetch("YOUR_APPS_SCRIPT_WEBAPP_URL", {
-          method: "POST",
-          body: JSON.stringify({ qrData: content }),
-          headers: { "Content-Type": "application/json" },
-        });
-
-        await scanner.stop(); // Pause scanning after success
-        setTimeout(() => {
-          result.textContent = "Scan a QR Code";
-          scanner.start();
-        }, 2000);
-      });
-
-      await scanner.start();
-    }
-
-    startScanner();
-
-    flashBtn.addEventListener("click", async () => {
-      if (scanner.hasFlash()) {
-        const isOn = await scanner.isFlashOn();
-        scanner.toggleFlash();
-        flashBtn.textContent = isOn ? "🔦 Flash" : "💡 On";
-      } else {
-        alert("Flashlight not supported on this device.");
-      }
-    });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-  </script>
 </body>
 </html>
