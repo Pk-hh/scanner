@@ -2,14 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QR Scanner PWA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>QR Scanner</title>
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="icon.png" />
+
+  <!-- QR Scanner Library -->
+  <script src="https://unpkg.com/qr-scanner/qr-scanner.min.js"></script>
   <script defer src="app.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: system-ui, sans-serif;
+      background-color: #000;
+      color: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+
+    #controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    #flash-btn {
+      background-color: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 1px solid #fff;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #result {
+      position: absolute;
+      bottom: 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      color: #0f0;
+      text-align: center;
+      width: calc(100% - 40px);
+      max-width: 90%;
+    }
+  </style>
 </head>
 <body>
-  <h1>QR Scanner</h1>
-  <video id="preview" width="100%" autoplay></video>
-  <p id="result">Scan a QR Code</p>
+  <div id="controls">
+    <button id="flash-btn">🔦 Flash</button>
+  </div>
+  <video id="preview" playsinline autoplay></video>
+  <div id="result">Scan a QR Code</div>
+
+  <script>
+    const video = document.getElementById("preview");
+    const result = document.getElementById("result");
+    const flashBtn = document.getElementById("flash-btn");
+
+    let scanner;
+
+    async function startScanner() {
+      scanner = new QrScanner(video, async (content) => {
+        result.textContent = "✅ " + content;
+        if (navigator.vibrate) navigator.vibrate(150);
+
+        // Send to Google Sheet
+        await fetch("YOUR_APPS_SCRIPT_WEBAPP_URL", {
+          method: "POST",
+          body: JSON.stringify({ qrData: content }),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        await scanner.stop(); // Pause scanning after success
+        setTimeout(() => {
+          result.textContent = "Scan a QR Code";
+          scanner.start();
+        }, 2000);
+      });
+
+      await scanner.start();
+    }
+
+    startScanner();
+
+    flashBtn.addEventListener("click", async () => {
+      if (scanner.hasFlash()) {
+        const isOn = await scanner.isFlashOn();
+        scanner.toggleFlash();
+        flashBtn.textContent = isOn ? "🔦 Flash" : "💡 On";
+      } else {
+        alert("Flashlight not supported on this device.");
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
