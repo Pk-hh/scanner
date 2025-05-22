@@ -1,6 +1,6 @@
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open('attendance-app').then(cache => {
+    caches.open('att-app-v1').then(cache => {
       return cache.addAll([
         'index.html',
         'manifest.json',
@@ -12,6 +12,6 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(event.request).then(res => res || fetch(event.request))
   );
 });
