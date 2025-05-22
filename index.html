@@ -1,105 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>QR Scanner → Google Sheets</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Attendance Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: sans-serif; background:#121212; color:#eee;
-      display:flex; flex-direction:column; align-items:center; padding:1rem; }
-    button { margin:0.5rem; padding:0.75rem 1.5rem; font-size:1rem;
-      border:none; border-radius:6px; cursor:pointer; }
-    #signInBtn { background:#4285F4; color:#fff; }
-    #scanBtn { background:#1DB954; color:#fff; }
-    video { width:100%; max-width:360px; border-radius:8px; margin-top:1rem; }
-    #status { margin-top:1rem; font-size:0.9rem; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+    }
+    #reader {
+      width: 300px;
+      margin: 0 auto;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    .section {
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #aaa;
+      text-align: left;
+    }
+    .btn {
+      margin: 5px 0;
+      background: #1976d2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #135ba1;
+    }
   </style>
 </head>
 <body>
 
-  <h1>QR → Sheets</h1>
-  <button id="signInBtn">Sign in with Google</button>
-  <button id="scanBtn" disabled>Start Scan</button>
-  <div id="status">Not signed in</div>
-  <video id="video" autoplay muted playsinline></video>
+  <h1>Student Attendance</h1>
 
-  <!-- ZXing for QR scanning -->
-  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
-  <!-- Google API client -->
-  <script src="https://apis.google.com/js/api.js"></script>
+  <div class="section" id="reader"></div>
+
+  <div class="section">
+    <label for="manualEntry">Manual Student ID Entry:</label>
+    <input type="text" id="manualEntry" placeholder="Enter Student ID">
+    <button class="btn" onclick="markAttendanceManually()">Mark Present</button>
+  </div>
+
+  <div class="section">
+    <h3>Attendance List</h3>
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button class="btn" onclick="exportCSV()">Export CSV</button>
+    <button class="btn" onclick="resetAttendance()">Reset</button>
+  </div>
+
   <script>
-    const API_KEY      = 'AIzaSyBHvc3cTPD_27JTdBZWOlOygx9fxlSxPzs';
-    const CLIENT_ID    = 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com';
-    const SCOPES       = 'https://www.googleapis.com/auth/spreadsheets';
-    const SPREADSHEET_ID = '1JNVFoli7SGCRwhC-Sn_0HzJhq7GIlWI_Hezy-RH3MC0';
+    const attendanceKey = 'attendanceData';
 
-    const signInBtn = document.getElementById('signInBtn');
-    const scanBtn   = document.getElementById('scanBtn');
-    const statusEl  = document.getElementById('status');
-    const video     = document.getElementById('video');
-    let qrReader;
-
-    function updateSigninStatus(isSignedIn) {
-      if (isSignedIn) {
-        signInBtn.style.display = 'none';
-        scanBtn.disabled = false;
-        statusEl.textContent = 'Signed in – ready to scan';
-      } else {
-        signInBtn.style.display = 'inline-block';
-        scanBtn.disabled = true;
-        statusEl.textContent = 'Not signed in';
+    function loadAttendance() {
+      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
+      const tbody = document.querySelector("#attendanceTable tbody");
+      tbody.innerHTML = "";
+      for (const id in data) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${id}</td><td>${data[id]}</td>`;
+        tbody.appendChild(row);
       }
     }
 
-    function initClient() {
-      gapi.client.init({
-        apiKey: API_KEY,
-        clientId: CLIENT_ID,
-        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-        scope: SCOPES
-      }).then(() => {
-        const auth = gapi.auth2.getAuthInstance();
-        auth.isSignedIn.listen(updateSigninStatus);
-        updateSigninStatus(auth.isSignedIn.get());
-        signInBtn.onclick = () => auth.signIn();
-      });
+    function markAttendance(studentId) {
+      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
+      if (!data[studentId]) {
+        data[studentId] = new Date().toLocaleString();
+        localStorage.setItem(attendanceKey, JSON.stringify(data));
+        loadAttendance();
+        alert(`Marked present: ${studentId}`);
+      } else {
+        alert(`${studentId} is already marked present.`);
+      }
     }
 
-    gapi.load('client:auth2', initClient);
-
-    scanBtn.addEventListener('click', () => {
-      scanBtn.disabled = true;
-      statusEl.textContent = 'Scanning…';
-      qrReader = new ZXing.BrowserQRCodeReader();
-      qrReader.decodeOnceFromVideoDevice(undefined, video)
-        .then(result => {
-          statusEl.textContent = 'QR: ' + result.text;
-          qrReader.reset();
-          appendToSheet(result.text);
-        })
-        .catch(err => {
-          statusEl.textContent = 'Scan error: ' + err;
-          scanBtn.disabled = false;
-        });
-    });
-
-    function appendToSheet(qrData) {
-      const params = {
-        spreadsheetId: SPREADSHEET_ID,
-        range: 'Sheet1',
-        valueInputOption: 'RAW',
-        insertDataOption: 'INSERT_ROWS',
-        resource: { values: [[ new Date().toLocaleString(), qrData ]] }
-      };
-      gapi.client.sheets.spreadsheets.values.append(params)
-        .then(response => {
-          statusEl.textContent = 'Appended ✓';
-          scanBtn.disabled = false;
-        }, err => {
-          statusEl.textContent = 'Append error: ' + err.result.error.message;
-          scanBtn.disabled = false;
-        });
+    function markAttendanceManually() {
+      const input = document.getElementById("manualEntry");
+      const id = input.value.trim();
+      if (id) {
+        markAttendance(id);
+        input.value = "";
+      }
     }
+
+    function exportCSV() {
+      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
+      let csv = "Student ID,Time\n";
+      for (const id in data) {
+        csv += `${id},${data[id]}\n`;
+      }
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "attendance.csv";
+      link.click();
+    }
+
+    function resetAttendance() {
+      if (confirm("Are you sure you want to reset attendance?")) {
+        localStorage.removeItem(attendanceKey);
+        loadAttendance();
+      }
+    }
+
+    // QR Scanner
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      markAttendance(decodedText);
+    };
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      qrCodeSuccessCallback
+    ).catch(err => console.error("QR start error:", err));
+
+    loadAttendance();
   </script>
 </body>
 </html>
