@@ -5,123 +5,242 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Student Attendance</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#1976d2"/>
+  <meta name="theme-color" content="#7e57c2"/>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    :root {
+      --main-color: #7e57c2;
+      --text-color: #222;
+      --bg-color: #fff;
+      --card-color: #f3f0fb;
+    }
+    [data-theme="dark"] {
+      --main-color: #b39ddb;
+      --text-color: #eee;
+      --bg-color: #121212;
+      --card-color: #1e1e1e;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 10px;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
       margin: 0;
-      background: #f4f4f4;
-      color: #333;
+      padding: 1rem;
+      transition: background 0.3s, color 0.3s;
     }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
     h1 {
-      text-align: center;
+      margin: 0;
+      font-size: 1.5rem;
     }
+
+    .theme-toggle {
+      background: var(--main-color);
+      border: none;
+      padding: 0.5rem 1rem;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
     #reader {
-      width: 100%;
-      max-width: 300px;
-      margin: 0 auto;
+      max-width: 320px;
+      margin: 1rem auto;
     }
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
+
     .section {
-      margin-top: 20px;
+      background: var(--card-color);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      background: var(--main-color);
+      border: none;
+      color: white;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #6a4fb0;
+    }
+
     table {
       width: 100%;
+      margin-top: 1rem;
       border-collapse: collapse;
-      margin-top: 10px;
     }
+
     th, td {
-      padding: 8px;
-      border: 1px solid #aaa;
-      text-align: left;
-      font-size: 14px;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ccc;
     }
-    .btn {
-      margin: 5px 0;
-      background: #1976d2;
+
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--main-color);
       color: white;
-      border: none;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       cursor: pointer;
-      border-radius: 4px;
+      transition: background 0.3s;
+      z-index: 1000;
     }
-    .btn:hover {
-      background: #135ba1;
+
+    .snackbar {
+      visibility: hidden;
+      background-color: #323232;
+      color: #fff;
+      text-align: center;
+      padding: 0.75rem;
+      border-radius: 4px;
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      transition: visibility 0s, opacity 0.5s ease-in-out;
+      opacity: 0;
+    }
+
+    .snackbar.show {
+      visibility: visible;
+      opacity: 1;
     }
   </style>
 </head>
 <body>
 
-  <h1>Attendance</h1>
+  <header>
+    <h1>Attendance</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  </header>
 
-  <div class="section" id="reader"></div>
+  <div class="section" style="display:none" id="scanner">
+    <div id="reader"></div>
+    <button onclick="closeScanner()">Close Scanner</button>
+  </div>
 
   <div class="section">
-    <input type="text" id="manualEntry" placeholder="Enter Student ID">
-    <button class="btn" onclick="markAttendanceManually()">Mark Present</button>
+    <h3>Manual Entry</h3>
+    <input type="text" id="manualEntry" placeholder="Enter ID|Name">
+    <button onclick="markManual()">Mark Present</button>
   </div>
 
   <div class="section">
     <h3>Attendance List</h3>
-    <table id="attendanceTable">
+    <table>
       <thead>
         <tr>
-          <th>Student ID</th>
+          <th>ID</th>
+          <th>Name</th>
           <th>Time</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="attendanceBody"></tbody>
     </table>
-    <button class="btn" onclick="exportCSV()">Export CSV</button>
-    <button class="btn" onclick="resetAttendance()">Reset</button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="resetAttendance()">Reset</button>
   </div>
 
+  <div class="fab" onclick="openScanner()">📷</div>
+
+  <div class="snackbar" id="snackbar">Marked present!</div>
+
   <script>
-    const attendanceKey = 'attendanceData';
+    const KEY = "studentAttendance";
 
-    function loadAttendance() {
-      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
-      const tbody = document.querySelector("#attendanceTable tbody");
-      tbody.innerHTML = "";
-      for (const id in data) {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${id}</td><td>${data[id]}</td>`;
-        tbody.appendChild(row);
-      }
+    function showSnackbar(text) {
+      const bar = document.getElementById("snackbar");
+      bar.textContent = text;
+      bar.classList.add("show");
+      setTimeout(() => bar.classList.remove("show"), 2000);
     }
 
-    function markAttendance(studentId) {
-      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
-      if (!data[studentId]) {
-        data[studentId] = new Date().toLocaleString();
-        localStorage.setItem(attendanceKey, JSON.stringify(data));
-        loadAttendance();
-        alert(`Marked present: ${studentId}`);
+    function saveData(data) {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    }
+
+    function getData() {
+      return JSON.parse(localStorage.getItem(KEY)) || {};
+    }
+
+    function markAttendance(entry) {
+      const [id, name] = entry.split("|").map(e => e.trim());
+      if (!id || !name) {
+        alert("Invalid format. Use ID|Name");
+        return;
+      }
+      const data = getData();
+      if (!data[id]) {
+        data[id] = { name, time: new Date().toLocaleString() };
+        saveData(data);
+        loadTable();
+        showSnackbar(`Marked: ${name}`);
       } else {
-        alert(`${studentId} is already marked present.`);
+        showSnackbar(`${name} already marked`);
       }
     }
 
-    function markAttendanceManually() {
+    function markManual() {
       const input = document.getElementById("manualEntry");
-      const id = input.value.trim();
-      if (id) {
-        markAttendance(id);
+      const value = input.value.trim();
+      if (value) {
+        markAttendance(value);
         input.value = "";
       }
     }
 
-    function exportCSV() {
-      const data = JSON.parse(localStorage.getItem(attendanceKey)) || {};
-      let csv = "Student ID,Time\n";
+    function loadTable() {
+      const data = getData();
+      const body = document.getElementById("attendanceBody");
+      body.innerHTML = "";
       for (const id in data) {
-        csv += `${id},${data[id]}\n`;
+        const { name, time } = data[id];
+        const row = `<tr><td>${id}</td><td>${name}</td><td>${time}</td></tr>`;
+        body.insertAdjacentHTML("beforeend", row);
+      }
+    }
+
+    function exportCSV() {
+      const data = getData();
+      let csv = "ID,Name,Time\n";
+      for (const id in data) {
+        const { name, time } = data[id];
+        csv += `${id},${name},${time}\n`;
       }
       const blob = new Blob([csv], { type: "text/csv" });
       const link = document.createElement("a");
@@ -131,32 +250,51 @@
     }
 
     function resetAttendance() {
-      if (confirm("Are you sure you want to reset attendance?")) {
-        localStorage.removeItem(attendanceKey);
-        loadAttendance();
+      if (confirm("Clear all data?")) {
+        localStorage.removeItem(KEY);
+        loadTable();
       }
     }
 
-    // QR Scanner
-    const qrCodeSuccessCallback = (decodedText) => {
-      markAttendance(decodedText);
-    };
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      qrCodeSuccessCallback
-    ).catch(err => console.error("QR start error:", err));
+    function applyTheme() {
+      const theme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", theme);
+    }
 
-    loadAttendance();
+    function openScanner() {
+      document.getElementById("scanner").style.display = "block";
+      const qr = new Html5Qrcode("reader");
+      qr.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+        decoded => {
+          qr.stop().then(() => {
+            markAttendance(decoded);
+            document.getElementById("scanner").style.display = "none";
+          });
+        },
+        err => console.warn(err)
+      );
+    }
 
-    // Register Service Worker
+    function closeScanner() {
+      location.reload();
+    }
+
+    // PWA Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registered.', reg))
-        .catch(err => console.error('SW registration failed:', err));
+        .then(reg => console.log("SW registered"))
+        .catch(err => console.error("SW failed", err));
     }
+
+    applyTheme();
+    loadTable();
   </script>
 </body>
 </html>
