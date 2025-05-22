@@ -1,82 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QR Scanner PWA</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 20px;
-      background: #222;
-      color: #eee;
-      text-align: center;
-    }
-    video {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    button {
-      background: #28a745;
-      border: none;
-      padding: 15px 30px;
-      color: white;
-      font-size: 1.1rem;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QR Scanner PWA</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+  }
+  video {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+  button {
+    background-color: #1db954;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: #fff;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
 
-  <h1>QR Scanner</h1>
-  <video id="preview"></video>
-  <br />
-  <button id="startBtn">Start Scanning</button>
+<h1>QR Scanner</h1>
+<video id="video" autoplay muted playsinline></video>
+<button id="startButton">Start Scan</button>
 
-  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
-  <script>
-    const startBtn = document.getElementById("startBtn");
-    const videoElement = document.getElementById("preview");
-    const codeReader = new ZXing.BrowserQRCodeReader();
+<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+<script>
+  const startButton = document.getElementById('startButton');
+  const video = document.getElementById('video');
+  const codeReader = new ZXing.BrowserQRCodeReader();
 
-    const sheetURL = "https://script.google.com/macros/s/AKfycbwmIpxffPQ0Sz8E79Rybw3x2_0ZoQzom2IU92oNMZ_EilW_3DA1biwMvxm_WfmRKnFG/exec";
+  const sheetURL = "https://script.google.com/macros/s/AKfycbwmIpxffPQ0Sz8E79Rybw3x2_0ZoQzom2IU92oNMZ_EilW_3DA1biwMvxm_WfmRKnFG/exec";
 
-    startBtn.addEventListener("click", () => {
-      startBtn.disabled = true;
-      codeReader.decodeOnceFromVideoDevice(undefined, videoElement)
-        .then(result => {
-          alert("QR Code detected: " + result.text);
-          sendDataToSheet(result.text);
-          codeReader.reset();
-          startBtn.disabled = false;
-        })
-        .catch(err => {
-          alert("Error scanning QR code: " + err);
-          startBtn.disabled = false;
-        });
-    });
+  startButton.addEventListener('click', () => {
+    startButton.disabled = true;
+    codeReader.decodeOnceFromVideoDevice(undefined, video)
+      .then(result => {
+        alert('QR Code detected: ' + result.text);
+        sendToSheet(result.text);
+        codeReader.reset();
+        startButton.disabled = false;
+      })
+      .catch(err => {
+        alert('Error scanning QR code: ' + err);
+        startButton.disabled = false;
+      });
+  });
 
-    async function sendDataToSheet(qrData) {
-      try {
-        const response = await fetch(sheetURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ qrData })
-        });
-        const text = await response.text();
-        alert("Response from server: " + text);
-      } catch (error) {
-        alert("Failed to send data: " + error.message);
-      }
+  async function sendToSheet(qrData) {
+    try {
+      const response = await fetch(sheetURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qrData })
+      });
+      const text = await response.text();
+      alert('Server response: ' + text);
+    } catch (error) {
+      alert('Failed to send data: ' + error.message);
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
