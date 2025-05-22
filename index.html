@@ -3,191 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Attendance</title>
+  <title>Attendance App</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6200ea"/>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     :root {
-      --main-color: #7e57c2;
-      --accent-color: #9575cd;
-      --text-color: #222;
-      --bg-color: #f8f6fc;
-      --card-color: #fff;
-      --border-radius: 16px;
-      --shadow-color: rgba(0,0,0,0.1);
+      --primary: #6200ea;
+      --primary-light: #9d46ff;
+      --primary-dark: #0a00b6;
+      --text-light: #ffffff;
+      --text-dark: #000000;
+      --bg-light: #f5f5f5;
+      --bg-dark: #121212;
+      --card-light: #ffffff;
+      --card-dark: #1f1f1f;
+      --border-radius: 20px;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: var(--bg-dark);
+      --card-color: var(--card-dark);
+      --text-color: var(--text-light);
+    }
+
+    [data-theme="light"] {
+      --bg-color: var(--bg-light);
+      --card-color: var(--card-light);
+      --text-color: var(--text-dark);
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
       background: var(--bg-color);
       color: var(--text-color);
-      margin: 0;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      transition: all 0.3s ease;
     }
 
     header {
+      padding: 1rem 2rem;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
-      font-weight: 700;
-      font-size: 2rem;
-      color: var(--main-color);
-      user-select: none;
-      letter-spacing: 0.05em;
+      background: var(--primary);
+      color: white;
+      border-bottom-left-radius: var(--border-radius);
+      border-bottom-right-radius: var(--border-radius);
     }
 
-    .section {
+    header h1 {
+      font-size: 1.8rem;
+    }
+
+    .theme-toggle {
+      background: white;
+      color: var(--primary);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    main {
+      max-width: 500px;
+      margin: auto;
+      padding: 2rem 1rem;
+    }
+
+    .card {
       background: var(--card-color);
-      padding: 1.5rem 2rem;
-      margin: 0 auto 2rem auto;
       border-radius: var(--border-radius);
-      box-shadow: 0 8px 20px var(--shadow-color);
-      max-width: 480px;
-      width: 100%;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
-    #reader {
-      max-width: 320px;
-      margin: 1rem auto;
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: 0 4px 12px var(--shadow-color);
+    h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
     }
 
-    input[type="text"] {
+    input, button {
       width: 100%;
-      padding: 0.75rem 1rem;
-      margin-top: 0.5rem;
-      border-radius: var(--border-radius);
-      border: 1.5px solid #ccc;
+      padding: 0.75rem;
       font-size: 1rem;
-      outline-offset: 2px;
-      transition: border-color 0.3s ease;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--main-color);
-      box-shadow: 0 0 8px var(--accent-color);
+      margin-top: 1rem;
+      border-radius: var(--border-radius);
+      border: 1px solid #ccc;
     }
 
     button {
-      background: var(--main-color);
-      border: none;
+      background: var(--primary);
       color: white;
-      padding: 0.75rem;
-      margin-top: 0.8rem;
-      width: 100%;
-      font-size: 1.1rem;
-      border-radius: var(--border-radius);
+      border: none;
       cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s ease;
-      user-select: none;
     }
 
-    button:hover, .fab:hover {
-      background: var(--accent-color);
+    button:hover {
+      background: var(--primary-light);
     }
 
-    /* Modern improved table styles */
     table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #2c3e50;
-      border-radius: 1rem;
-      overflow: hidden;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      border-collapse: collapse;
       margin-top: 1rem;
     }
 
-    thead {
-      background: linear-gradient(90deg, #7e57c2, #9575cd);
-      color: white;
-      font-weight: 700;
-      user-select: none;
-    }
-
-    thead th {
-      padding: 1rem 1.5rem;
+    th, td {
+      padding: 0.75rem;
       text-align: left;
-      font-variant: small-caps;
-      letter-spacing: 0.1em;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid #ddd;
-      transition: background-color 0.25s ease;
-      cursor: default;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #f9f7ff;
-    }
-
-    tbody tr:hover {
-      background-color: #e0d7ff;
-    }
-
-    tbody td {
-      padding: 1rem 1.5rem;
-      vertical-align: middle;
-      border-left: 1px solid transparent;
-    }
-
-    tbody td:first-child {
-      border-left: none;
-    }
-
-    /* Attendance checkmark icon cell */
-    .status-icon {
-      text-align: center;
-      font-size: 1.3rem;
-      user-select: none;
+      border-bottom: 1px solid #ccc;
     }
 
     .fab {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--main-color);
+      background: var(--primary);
       color: white;
-      font-size: 2.5rem;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      font-size: 1.5rem;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
       cursor: pointer;
-      transition: background 0.3s ease;
-      z-index: 1000;
-      user-select: none;
     }
 
     .snackbar {
-      visibility: hidden;
-      background-color: #323232;
-      color: #fff;
-      text-align: center;
-      padding: 0.75rem 1.25rem;
-      border-radius: var(--border-radius);
       position: fixed;
-      bottom: 90px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 999;
-      transition: visibility 0s, opacity 0.5s ease-in-out;
+      background: #333;
+      color: #fff;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      visibility: hidden;
       opacity: 0;
-      font-weight: 600;
-      min-width: 180px;
-      user-select: none;
+      transition: opacity 0.3s ease;
     }
 
     .snackbar.show {
@@ -195,50 +155,45 @@
       opacity: 1;
     }
 
-    /* Scanner section hidden initially */
-    #scanner {
-      display: none;
+    #reader {
+      max-width: 100%;
+      margin: 0 auto;
     }
-
   </style>
 </head>
 <body>
-
   <header>
-    🎓 Attendance
+    <h1>📋 Attendance</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
   </header>
 
-  <div class="section" id="scanner">
-    <div id="reader"></div>
-    <button onclick="closeScanner()">Close Scanner</button>
-  </div>
+  <main>
+    <div class="card" style="display:none" id="scanner">
+      <div id="reader"></div>
+      <button onclick="closeScanner()">Close Scanner</button>
+    </div>
 
-  <div class="section">
-    <h3>Manual Entry</h3>
-    <input type="text" id="manualEntry" placeholder="Enter ID|Name (e.g. 123|John Doe)" aria-label="Manual entry for student ID and name" />
-    <button onclick="markManual()">Mark Present</button>
-  </div>
+    <div class="card">
+      <h2>Manual Entry</h2>
+      <input type="text" id="manualEntry" placeholder="Enter ID|Name">
+      <button onclick="markManual()">Mark Present</button>
+    </div>
 
-  <div class="section">
-    <h3>Attendance List</h3>
-    <table aria-live="polite" aria-describedby="attendanceDesc" role="table">
-      <thead>
-        <tr>
-          <th scope="col" style="width: 10%;">#</th>
-          <th scope="col" style="width: 25%;">ID</th>
-          <th scope="col" style="width: 45%;">Name</th>
-          <th scope="col" style="width: 20%;">Time</th>
-        </tr>
-      </thead>
-      <tbody id="attendanceBody" role="rowgroup"></tbody>
-    </table>
-    <button onclick="exportCSV()">Export CSV</button>
-    <button onclick="resetAttendance()">Reset</button>
-  </div>
+    <div class="card">
+      <h2>Attendance List</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Time</th></tr>
+        </thead>
+        <tbody id="attendanceBody"></tbody>
+      </table>
+      <button onclick="exportCSV()">Export CSV</button>
+      <button onclick="resetAttendance()">Reset</button>
+    </div>
+  </main>
 
-  <div class="fab" onclick="openScanner()" title="Open QR Scanner" aria-label="Open QR Scanner">📷</div>
-
-  <div class="snackbar" id="snackbar" role="alert" aria-live="assertive"></div>
+  <div class="fab" onclick="openScanner()">📷</div>
+  <div class="snackbar" id="snackbar">Marked present!</div>
 
   <script>
     const KEY = "studentAttendance";
@@ -288,19 +243,10 @@
       const data = getData();
       const body = document.getElementById("attendanceBody");
       body.innerHTML = "";
-      let index = 1;
       for (const id in data) {
         const { name, time } = data[id];
-        const row = `
-          <tr>
-            <td class="status-icon">✔️</td>
-            <td>${id}</td>
-            <td>${name}</td>
-            <td>${time}</td>
-          </tr>
-        `;
+        const row = `<tr><td>${id}</td><td>${name}</td><td>${time}</td></tr>`;
         body.insertAdjacentHTML("beforeend", row);
-        index++;
       }
     }
 
@@ -319,10 +265,23 @@
     }
 
     function resetAttendance() {
-      if (confirm("Clear all attendance data?")) {
+      if (confirm("Clear all data?")) {
         localStorage.removeItem(KEY);
         loadTable();
       }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme") || "light";
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    function applyTheme() {
+      const theme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", theme);
     }
 
     function openScanner() {
@@ -335,9 +294,7 @@
             document.getElementById("scanner").style.display = "none";
           });
         },
-        err => {
-          // ignore errors silently
-        }
+        err => console.warn(err)
       );
     }
 
@@ -345,7 +302,13 @@
       location.reload();
     }
 
-    // Load attendance list on page load
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("Service worker registered"))
+        .catch(err => console.error("Service worker failed", err));
+    }
+
+    applyTheme();
     loadTable();
   </script>
 </body>
