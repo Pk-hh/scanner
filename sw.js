@@ -1,15 +1,17 @@
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open("qr-cache").then((cache) => {
-      return cache.addAll(["/", "index.html", "app.js", "qr-scanner.min.js"]);
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open('attendance-app').then(cache => {
+      return cache.addAll([
+        'index.html',
+        'manifest.json',
+        'https://unpkg.com/html5-qrcode'
+      ]);
     })
   );
 });
 
-self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((resp) => {
-      return resp || fetch(e.request);
-    })
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
