@@ -1,10 +1,10 @@
 {
-  "name": "Student Attendance Scanner",
+  "name": "Student Attendance",
   "short_name": "Attendance",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1976d2",
+  "background_color": "#121212",
+  "theme_color": "#7e57c2",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/992/992700.png",
