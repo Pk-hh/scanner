@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>QR Scanner</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#000000" />
   <link rel="icon" href="icon.png" />
 
-  <!-- QR Scanner Library -->
+  <!-- QR Scanner -->
   <script type="module">
     import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
 
@@ -30,8 +29,8 @@
         result.textContent = "✅ " + content;
         if (navigator.vibrate) navigator.vibrate(200);
 
-        // Send to Google Sheets
-        await fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+        // ✅ SEND TO GOOGLE SHEET
+        await fetch("https://script.google.com/macros/s/AKfycbwmIpxffPQ0Sz8E79Rybw3x2_0ZoQzom2IU92oNMZ_EilW_3DA1biwMvxm_WfmRKnFG/exec", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ qrData: content })
@@ -48,12 +47,11 @@
     });
 
     flashBtn.addEventListener("click", async () => {
-      if (scanner && scanner._active && scanner.hasFlash()) {
+      if (scanner && scanner.hasFlash()) {
         try {
           await scanner.toggleFlash();
-          flashBtn.textContent = scanner.isFlashOn() ? "💡 Flash Off" : "🔦 Flash On";
         } catch {
-          alert("Flash control not supported.");
+          alert("Flash not supported.");
         }
       } else {
         alert("Flash not available.");
@@ -70,7 +68,6 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: system-ui, sans-serif;
       background: #000;
       color: #fff;
       display: flex;
@@ -78,6 +75,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      font-family: system-ui, sans-serif;
     }
 
     video {
@@ -89,13 +87,12 @@
     #result {
       position: absolute;
       bottom: 20px;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
       padding: 10px 20px;
       border-radius: 10px;
       font-size: 1rem;
-      text-align: center;
-      max-width: 90%;
       color: #0f0;
+      text-align: center;
     }
 
     #flash-btn {
