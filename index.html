@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Attendance Scanner</title>
+  <title>Student Attendance</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1976d2"/>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 10px;
+      margin: 0;
       background: #f4f4f4;
       color: #333;
     }
@@ -16,13 +19,15 @@
       text-align: center;
     }
     #reader {
-      width: 300px;
+      width: 100%;
+      max-width: 300px;
       margin: 0 auto;
     }
     input, button {
       padding: 10px;
       margin: 5px 0;
       width: 100%;
+      box-sizing: border-box;
     }
     .section {
       margin-top: 20px;
@@ -36,6 +41,7 @@
       padding: 8px;
       border: 1px solid #aaa;
       text-align: left;
+      font-size: 14px;
     }
     .btn {
       margin: 5px 0;
@@ -43,6 +49,7 @@
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 4px;
     }
     .btn:hover {
       background: #135ba1;
@@ -51,12 +58,11 @@
 </head>
 <body>
 
-  <h1>Student Attendance</h1>
+  <h1>Attendance</h1>
 
   <div class="section" id="reader"></div>
 
   <div class="section">
-    <label for="manualEntry">Manual Student ID Entry:</label>
     <input type="text" id="manualEntry" placeholder="Enter Student ID">
     <button class="btn" onclick="markAttendanceManually()">Mark Present</button>
   </div>
@@ -132,21 +138,25 @@
     }
 
     // QR Scanner
-    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+    const qrCodeSuccessCallback = (decodedText) => {
       markAttendance(decodedText);
     };
 
     const html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
       { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: 250
-      },
+      { fps: 10, qrbox: 250 },
       qrCodeSuccessCallback
     ).catch(err => console.error("QR start error:", err));
 
     loadAttendance();
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered.', reg))
+        .catch(err => console.error('SW registration failed:', err));
+    }
   </script>
 </body>
 </html>
