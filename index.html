@@ -1,156 +1,251 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Attendance</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#7e57c2"/>
+  <meta name="theme-color" content="#7e57c2" />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    :root {
-      --main-color: #7e57c2;
-      --accent-color: #9575cd;
-      --text-color: #222;
-      --bg-color: #f8f6fc;
-      --card-color: #fff;
-      --border-radius: 16px;
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f1fa;
+      color: #3a2f5a;
       margin: 0;
-      padding: 1rem;
-      transition: background 0.3s, color 0.3s;
+      padding: 1rem 1.5rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1rem;
-      padding: 0 1rem;
-      height: 60px;
-      border-bottom: 1px solid #ddd;
+      padding: 1rem 0;
+      border-bottom: 2px solid #9c8dde;
+      margin-bottom: 1.5rem;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 600;
+    header h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      color: #6a4caf;
+      letter-spacing: 1px;
+      user-select: none;
     }
 
-    #reader {
-      max-width: 320px;
-      margin: 1rem auto;
-    }
-
+    /* Section card styling */
     .section {
-      background: var(--card-color);
-      padding: 1.5rem;
-      margin: 1rem 0;
-      border-radius: var(--border-radius);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.75rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(106, 76, 175, 0.12);
+      transition: box-shadow 0.3s ease;
     }
 
-    input {
+    .section:hover {
+      box-shadow: 0 12px 30px rgba(106, 76, 175, 0.25);
+    }
+
+    h3 {
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #5e4ca6;
+    }
+
+    /* Input styling */
+    input[type="text"] {
       width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border-radius: var(--border-radius);
-      border: 1px solid #ccc;
+      padding: 0.85rem 1rem;
       font-size: 1rem;
+      border-radius: 14px;
+      border: 2px solid #9c8dde;
+      transition: border-color 0.3s ease;
+      outline-offset: 2px;
+      outline-color: transparent;
+      color: #3a2f5a;
+      font-weight: 500;
     }
 
+    input[type="text"]:focus {
+      border-color: #6a4caf;
+      outline-color: #c9b6f9;
+      background-color: #f9f6ff;
+    }
+
+    /* Buttons */
     button {
-      background: var(--main-color);
+      background: linear-gradient(135deg, #7e57c2, #6a4caf);
       border: none;
       color: white;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
+      padding: 0.9rem 0;
+      margin-top: 0.8rem;
       width: 100%;
-      font-size: 1rem;
-      border-radius: var(--border-radius);
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.3s;
+      box-shadow: 0 6px 15px rgba(106, 76, 175, 0.3);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      user-select: none;
     }
 
-    button:hover {
-      background: var(--accent-color);
+    button:hover,
+    button:focus {
+      background: linear-gradient(135deg, #6a4caf, #7e57c2);
+      box-shadow: 0 10px 20px rgba(106, 76, 175, 0.45);
+      outline: none;
     }
 
+    /* Table styling */
     table {
       width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      font-weight: 500;
     }
 
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #ccc;
+    thead tr {
+      background-color: transparent;
+    }
+
+    th {
       text-align: left;
-      vertical-align: middle;
+      font-size: 1rem;
+      color: #7b6ecf;
+      padding-bottom: 0.75rem;
+      user-select: none;
     }
 
-    th:first-child, td:first-child {
+    tbody tr {
+      background: #faf7ff;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(123, 110, 207, 0.12);
+      transition: background 0.3s ease;
+    }
+
+    tbody tr:hover {
+      background: #f1ecff;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      vertical-align: middle;
+      color: #4b3d8e;
+    }
+
+    td:first-child {
       width: 60px;
       text-align: center;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
 
-    /* Photo styling */
+    /* Rounded images for photos */
     td img {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      display: block;
-      margin: 0 auto;
+      box-shadow: 0 3px 8px rgba(106, 76, 175, 0.2);
+      user-select: none;
     }
 
+    /* Floating Action Button */
     .fab {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 24px;
+      right: 24px;
       width: 64px;
       height: 64px;
+      background: #7e57c2;
       border-radius: 50%;
-      background: var(--main-color);
       color: white;
-      font-size: 2rem;
+      font-size: 2.2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(126, 87, 194, 0.45);
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
       z-index: 1000;
     }
 
     .fab:hover {
-      background: var(--accent-color);
+      background: #6a4caf;
+      box-shadow: 0 15px 35px rgba(106, 76, 175, 0.7);
     }
 
+    /* Snackbar */
     .snackbar {
-      visibility: hidden;
-      background-color: #323232;
-      color: #fff;
-      text-align: center;
-      padding: 0.75rem 1rem;
-      border-radius: var(--border-radius);
       position: fixed;
       bottom: 90px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 999;
-      transition: visibility 0s, opacity 0.5s ease-in-out;
+      background-color: #4b3d8e;
+      color: white;
+      padding: 0.9rem 1.5rem;
+      border-radius: 24px;
+      box-shadow: 0 6px 20px rgba(75, 61, 142, 0.8);
+      font-weight: 600;
       opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+      user-select: none;
+      pointer-events: none;
+      z-index: 1100;
     }
 
     .snackbar.show {
-      visibility: visible;
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Scanner container */
+    #scanner {
+      max-width: 360px;
+      margin: 1rem auto 2rem;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(106, 76, 175, 0.15);
+    }
+
+    #scanner button {
+      margin: 0;
+      border-radius: 0 0 18px 18px;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem 1rem 3rem;
+      }
+      header h1 {
+        font-size: 1.6rem;
+      }
+      .section {
+        padding: 1.3rem 1rem;
+      }
+      button {
+        font-size: 1rem;
+        padding: 0.75rem 0;
+      }
     }
   </style>
 </head>
@@ -160,14 +255,21 @@
     <h1>🎓 Attendance</h1>
   </header>
 
-  <div class="section" style="display:none" id="scanner">
+  <div class="section" id="scanner" style="display:none">
     <div id="reader"></div>
     <button onclick="closeScanner()">Close Scanner</button>
   </div>
 
   <div class="section">
     <h3>Manual Entry</h3>
-    <input type="text" id="manualEntry" placeholder="Enter ID|Name">
+    <input
+      type="text"
+      id="manualEntry"
+      placeholder="Enter ID|Name (e.g. 123|John Doe)"
+      autocomplete="off"
+      spellcheck="false"
+      aria-label="Manual attendance entry"
+    />
     <button onclick="markManual()">Mark Present</button>
   </div>
 
@@ -184,38 +286,43 @@
       </thead>
       <tbody id="attendanceBody"></tbody>
     </table>
-    <button onclick="exportCSV()">Export CSV</button>
-    <button onclick="resetAttendance()">Reset</button>
+
+    <button onclick="exportCSV()" style="margin-top: 1rem;">Export CSV</button>
+    <button onclick="resetAttendance()" style="margin-top: 0.5rem; background: #d295f7; color:#3a2f5a;">Reset</button>
   </div>
 
-  <div class="fab" onclick="openScanner()">📷</div>
+  <div class="fab" onclick="openScanner()" title="Open QR Scanner" aria-label="Open QR Scanner">
+    📷
+  </div>
 
   <div class="snackbar" id="snackbar">Marked present!</div>
 
   <script>
-    const KEY = "studentAttendance";
+    const STORAGE_KEY = "studentAttendance";
 
     function showSnackbar(text) {
-      const bar = document.getElementById("snackbar");
-      bar.textContent = text;
-      bar.classList.add("show");
-      setTimeout(() => bar.classList.remove("show"), 2000);
+      const snackbar = document.getElementById("snackbar");
+      snackbar.textContent = text;
+      snackbar.classList.add("show");
+      setTimeout(() => snackbar.classList.remove("show"), 2500);
     }
 
     function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
     function getData() {
-      return JSON.parse(localStorage.getItem(KEY)) || {};
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
     }
 
     function markAttendance(entry) {
-      const [id, name] = entry.split("|").map(e => e.trim());
-      if (!id || !name) {
+      const parts = entry.split("|").map(s => s.trim());
+      if (parts.length < 2 || !parts[0] || !parts[1]) {
         alert("Invalid format. Use ID|Name");
         return;
       }
+      const id = parts[0];
+      const name = parts.slice(1).join(" ");
       const data = getData();
       if (!data[id]) {
         data[id] = { name, time: new Date().toLocaleString() };
@@ -229,27 +336,28 @@
 
     function markManual() {
       const input = document.getElementById("manualEntry");
-      const value = input.value.trim();
-      if (value) {
-        markAttendance(value);
+      const val = input.value.trim();
+      if (val) {
+        markAttendance(val);
         input.value = "";
       }
     }
 
     function loadTable() {
       const data = getData();
-      const body = document.getElementById("attendanceBody");
-      body.innerHTML = "";
+      const tbody = document.getElementById("attendanceBody");
+      tbody.innerHTML = "";
       for (const id in data) {
         const { name, time } = data[id];
         const row = `
           <tr>
-            <td><img src="photos/${id}.jpg" alt="Photo" onerror="this.src='photos/default.jpg'"></td>
+            <td><img src="photos/${id}.jpg" alt="Photo of ${name}" onerror="this.src='photos/default.jpg'"/></td>
             <td>${id}</td>
             <td>${name}</td>
             <td>${time}</td>
-          </tr>`;
-        body.insertAdjacentHTML("beforeend", row);
+          </tr>
+        `;
+        tbody.insertAdjacentHTML("beforeend", row);
       }
     }
 
@@ -258,7 +366,7 @@
       let csv = "ID,Name,Time\n";
       for (const id in data) {
         const { name, time } = data[id];
-        csv += `${id},${name},${time}\n`;
+        csv += `"${id}","${name}","${time}"\n`;
       }
       const blob = new Blob([csv], { type: "text/csv" });
       const link = document.createElement("a");
@@ -268,8 +376,8 @@
     }
 
     function resetAttendance() {
-      if (confirm("Clear all data?")) {
-        localStorage.removeItem(KEY);
+      if (confirm("Are you sure you want to clear all attendance records?")) {
+        localStorage.removeItem(STORAGE_KEY);
         loadTable();
       }
     }
@@ -277,345 +385,38 @@
     function openScanner() {
       document.getElementById("scanner").style.display = "block";
       const qr = new Html5Qrcode("reader");
-      qr.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+      qr.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 280 },
         decoded => {
           qr.stop().then(() => {
             markAttendance(decoded);
             document.getElementById("scanner").style.display = "none";
           });
         },
-        err => console.warn(err)
-      );
+        err => {
+          // console.warn(err);
+        }
+      ).catch(err => {
+        alert("Unable to start QR scanner: " + err);
+        document.getElementById("scanner").style.display = "none";
+      });
     }
 
     function closeScanner() {
       location.reload();
     }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log("SW registered"))
-        .catch(err => console.error("SW failed", err));
+    // Service worker registration for PWA support
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(() => console.log("Service Worker registration failed"));
     }
 
     loadTable();
   </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Attendance</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#7e57c2"/>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    :root {
-      --main-color: #7e57c2;
-      --accent-color: #9575cd;
-      --text-color: #222;
-      --bg-color: #f8f6fc;
-      --card-color: #fff;
-      --border-radius: 16px;
-    }
-    [data-theme="dark"] {
-      --main-color: #b39ddb;
-      --accent-color: #d1c4e9;
-      --text-color: #eee;
-      --bg-color: #121212;
-      --card-color: #1e1e1e;
-    }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 1rem;
-      transition: background 0.3s, color 0.3s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    header {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-.theme-toggle {
-  background: var(--main-color);
-  border: none;
-  padding: 0.4rem 1rem; /* reduce vertical padding slightly for better vertical alignment */
-  color: white;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 1rem;
-  height: 36px; /* fix height for consistent alignment */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-    }
-
-    #reader {
-      display: flex;
-      justify-content: center;
-      max-width: 320px;
-      margin: 1rem auto;
-    }
-
-    .section {
-      width: 100%;
-      max-width: 600px;
-      background: var(--card-color);
-      padding: 1.5rem;
-      margin: 1rem auto;
-      border-radius: var(--border-radius);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    }
-
-    input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border-radius: var(--border-radius);
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-
-    button {
-      background: var(--main-color);
-      border: none;
-      color: white;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      width: 100%;
-      font-size: 1rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: var(--accent-color);
-    }
-
-    table {
-      width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
-      text-align: center;
-    }
-
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--main-color);
-      color: white;
-      font-size: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: background 0.3s;
-      z-index: 1000;
-    }
-
-    .snackbar {
-      visibility: hidden;
-      background-color: #323232;
-      color: #fff;
-      text-align: center;
-      padding: 0.75rem 1rem;
-      border-radius: var(--border-radius);
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 999;
-      transition: visibility 0s, opacity 0.5s ease-in-out;
-      opacity: 0;
-    }
-
-    .snackbar.show {
-      visibility: visible;
-      opacity: 1;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>🎓 Attendance</h1><br>
-   <!-- <button class="theme-toggle" onclick="toggleTheme()">🌓</button>-->
-  </header>
-
-  <div class="section" style="display:none" id="scanner">
-    <div id="reader"></div>
-    <button onclick="closeScanner()">Close Scanner</button>
-  </div>
-
-  <div class="section">
-    <h3>Manual Entry</h3>
-    <input type="text" id="manualEntry" placeholder="Enter ID|Name">
-    <button onclick="markManual()">Mark Present</button>
-  </div>
-
-  <div class="section">
-    <h3>Attendance List</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-      <tbody id="attendanceBody"></tbody>
-    </table>
-    <button onclick="exportCSV()">Export CSV</button>
-    <button onclick="resetAttendance()">Reset</button>
-  </div>
-
-  <div class="fab" onclick="openScanner()">📷</div>
-
-  <div class="snackbar" id="snackbar">Marked present!</div>
-
-  <script>
-    const KEY = "studentAttendance";
-
-    function showSnackbar(text) {
-      const bar = document.getElementById("snackbar");
-      bar.textContent = text;
-      bar.classList.add("show");
-      setTimeout(() => bar.classList.remove("show"), 2000);
-    }
-
-    function saveData(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
-    }
-
-    function getData() {
-      return JSON.parse(localStorage.getItem(KEY)) || {};
-    }
-
-    function markAttendance(entry) {
-      const [id, name] = entry.split("|").map(e => e.trim());
-      if (!id || !name) {
-        alert("Invalid format. Use ID|Name");
-        return;
-      }
-      const data = getData();
-      if (!data[id]) {
-        data[id] = { name, time: new Date().toLocaleString() };
-        saveData(data);
-        loadTable();
-        showSnackbar(`Marked: ${name}`);
-      } else {
-        showSnackbar(`${name} already marked`);
-      }
-    }
-
-    function markManual() {
-      const input = document.getElementById("manualEntry");
-      const value = input.value.trim();
-      if (value) {
-        markAttendance(value);
-        input.value = "";
-      }
-    }
-
-    function loadTable() {
-      const data = getData();
-      const body = document.getElementById("attendanceBody");
-      body.innerHTML = "";
-      for (const id in data) {
-        const { name, time } = data[id];
-        const row = `<tr><td>${id}</td><td>${name}</td><td>${time}</td></tr>`;
-        body.insertAdjacentHTML("beforeend", row);
-      }
-    }
-
-    function exportCSV() {
-      const data = getData();
-      let csv = "ID,Name,Time\n";
-      for (const id in data) {
-        const { name, time } = data[id];
-        csv += `${id},${name},${time}\n`;
-      }
-      const blob = new Blob([csv], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "attendance.csv";
-      link.click();
-    }
-
-    function resetAttendance() {
-      if (confirm("Clear all data?")) {
-        localStorage.removeItem(KEY);
-        loadTable();
-      }
-    }
-
-    function toggleTheme() {
-      const html = document.documentElement;
-      const isDark = html.getAttribute("data-theme") === "dark";
-      html.setAttribute("data-theme", isDark ? "light" : "dark");
-      localStorage.setItem("theme", isDark ? "light" : "dark");
-    }
-
-    function applyTheme() {
-      const theme = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-
-    function openScanner() {
-      document.getElementById("scanner").style.display = "block";
-      const qr = new Html5Qrcode("reader");
-      qr.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-        decoded => {
-          qr.stop().then(() => {
-            markAttendance(decoded);
-            document.getElementById("scanner").style.display = "none";
-          });
-        },
-        err => console.warn(err)
-      );
-    }
-
-    function closeScanner() {
-      location.reload();
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log("SW registered"))
-        .catch(err => console.error("SW failed", err));
-    }
-
-    applyTheme();
-    loadTable();
-  </script>
 </body>
 </html>
